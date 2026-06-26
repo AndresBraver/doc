@@ -64,6 +64,39 @@ export async function agregarCita(formData: FormData) {
   if (!error) revalidatePath(`/dashboard/pacientes/${paciente_id}`);
 }
 
+export async function aplicarCartilla(formData: FormData) {
+  const supabase = await createClient();
+  const paciente_id = String(formData.get("paciente_id"));
+  const nombre = String(formData.get("nombre")); // "Pentavalente acelular — 1a dosis"
+  const intervalo = formData.get("intervalo_meses");
+
+  const hoy = new Date();
+  let proxima: string | null = null;
+  if (intervalo && Number(intervalo) > 0) {
+    const d = new Date(hoy);
+    d.setMonth(d.getMonth() + Number(intervalo));
+    proxima = d.toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  const { error } = await supabase.from("vacunas").insert({
+    paciente_id,
+    nombre,
+    fecha_aplicada: hoy.toISOString().slice(0, 10),
+    proxima_dosis: proxima,
+    recordatorio_enviado: false,
+  });
+
+  if (!error) revalidatePath(`/dashboard/pacientes/${paciente_id}`);
+}
+
+export async function borrarVacuna(formData: FormData) {
+  const supabase = await createClient();
+  const id = String(formData.get("vacuna_id"));
+  const paciente_id = String(formData.get("paciente_id"));
+  await supabase.from("vacunas").delete().eq("id", id);
+  revalidatePath(`/dashboard/pacientes/${paciente_id}`);
+}
+
 export async function borrarPaciente(formData: FormData) {
   const supabase = await createClient();
   const id = String(formData.get("paciente_id"));

@@ -1,12 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
-  const { data: pacientes } = await supabase
+
+  let query = supabase
     .from("pacientes")
     .select("id, nombre, edad, telefono, email")
     .order("creado_en", { ascending: false });
+
+  if (q && q.trim()) {
+    query = query.ilike("nombre", `%${q.trim()}%`);
+  }
+
+  const { data: pacientes } = await query;
 
   return (
     <div className="space-y-4">
@@ -20,9 +32,26 @@ export default async function Dashboard() {
         </Link>
       </div>
 
+      <form method="GET" className="flex gap-2">
+        <input
+          name="q"
+          defaultValue={q || ""}
+          placeholder="Buscar paciente por nombre…"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 bg-white"
+        />
+        <button className="bg-slate-800 text-white rounded-lg px-4 text-sm">Buscar</button>
+      </form>
+      {q && (
+        <Link href="/dashboard" className="text-sm text-marca">
+          ← Ver todos
+        </Link>
+      )}
+
       {!pacientes || pacientes.length === 0 ? (
         <div className="bg-white rounded-2xl p-8 text-center text-slate-500">
-          Aún no hay pacientes. Toca <b>+ Nuevo</b> para registrar el primero.
+          {q
+            ? `No se encontró ningún paciente con "${q}".`
+            : "Aún no hay pacientes. Toca + Nuevo para registrar el primero."}
         </div>
       ) : (
         <ul className="space-y-2">
