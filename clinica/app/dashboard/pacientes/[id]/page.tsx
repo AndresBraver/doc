@@ -4,8 +4,7 @@ import {
 } from "../actions";
 import { CARTILLA } from "@/lib/cartilla";
 import { calcEdad, fechaEsperada, sumarMeses } from "@/lib/fechas";
-import { percentilOMS, edadEnMeses } from "@/lib/percentiles";
-import GraficaCrecimiento from "./GraficaCrecimiento";
+import { percentilOMS, edadEnMeses, valorEnZ } from "@/lib/percentiles";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -72,24 +71,18 @@ export default async function DetallePaciente({
       <section className="bg-white rounded-2xl p-5">
         <h2 className="font-semibold mb-1">Crecimiento</h2>
         <p className="text-xs text-slate-400 mb-4">
-          El punto azul es tu paciente; la línea verde es el promedio (OMS, el que usa México). Se
-          recalcula con cada medición.
+          Comparado con el promedio de la OMS (el que usa México). Se recalcula con cada medición.
         </p>
 
-        <div className="space-y-5 mb-4">
-          <GraficaCrecimiento
-            medida="weight" sexo={sexo} edadMeses={mesesExactos}
-            valor={p.peso} titulo="Peso para la edad" unidad="kg"
+        <div className="space-y-3 mb-4">
+          <ResumenMedida
+            verbo="Pesa" medida="weight" sexo={sexo} edadMeses={mesesExactos}
+            valor={p.peso} unidad="kg" res={pPeso}
           />
-          <GraficaCrecimiento
-            medida="height" sexo={sexo} edadMeses={mesesExactos}
-            valor={p.talla} titulo="Estatura para la edad" unidad="cm"
+          <ResumenMedida
+            verbo="Mide" medida="height" sexo={sexo} edadMeses={mesesExactos}
+            valor={p.talla} unidad="cm" res={pTalla}
           />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <Medida titulo="Peso" valor={p.peso ? `${p.peso} kg` : "—"} res={pPeso} />
-          <Medida titulo="Estatura/altura" valor={p.talla ? `${p.talla} cm` : "—"} res={pTalla} />
         </div>
 
         <details>
@@ -263,24 +256,51 @@ function Dato({ k, v, full }: { k: string; v: string; full?: boolean }) {
   );
 }
 
-function Medida({
-  titulo, valor, res,
+function ResumenMedida({
+  verbo, medida, sexo, edadMeses, valor, unidad, res,
 }: {
-  titulo: string;
-  valor: string;
+  verbo: string;
+  medida: "weight" | "height";
+  sexo: "male" | "female" | null;
+  edadMeses: number | null;
+  valor: number | null;
+  unidad: string;
   res: { percentil: number; etiqueta: string; color: string } | null;
 }) {
+  if (valor == null) {
+    return (
+      <div className="rounded-xl border border-slate-200 p-3 text-sm text-slate-400">
+        Falta registrar la medida.
+      </div>
+    );
+  }
+  if (!sexo || edadMeses == null || !res) {
+    return (
+      <div className="rounded-xl border border-slate-200 p-3 text-sm text-slate-400">
+        {verbo} {valor} {unidad}. Registra sexo y fecha de nacimiento para comparar con el promedio.
+      </div>
+    );
+  }
+
+  const promedio = valorEnZ(medida, sexo, edadMeses, 0);
+  const promTxt = promedio != null ? `${Math.round(promedio * 10) / 10} ${unidad}` : "—";
+  const pron = sexo === "male" ? "El niño" : "La niña";
+
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
-      <div className="text-xs text-slate-400">{titulo}</div>
-      <div className="text-lg font-semibold">{valor}</div>
-      {res ? (
-        <div className="text-xs mt-1" style={{ color: res.color }}>
-          Percentil {res.percentil} · {res.etiqueta}
-        </div>
-      ) : (
-        <div className="text-xs mt-1 text-slate-300">sin percentil</div>
-      )}
+    <div className="rounded-xl border border-slate-200 p-3 text-sm">
+      <p>
+        <b>{verbo} {valor} {unidad}.</b> El promedio para su edad es <b>{promTxt}</b>.
+      </p>
+      <p className="mt-1">
+        {pron} se encuentra en el <b style={{ color: res.color }}>{res.percentil}%</b> de la
+        población para su edad.
+      </p>
+      <span
+        className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full"
+        style={{ background: res.color + "22", color: res.color }}
+      >
+        {res.etiqueta === "Normal" ? "Dentro de lo normal" : res.etiqueta === "Bajo" ? "Por debajo de lo normal" : "Por arriba de lo normal"}
+      </span>
     </div>
   );
 }
