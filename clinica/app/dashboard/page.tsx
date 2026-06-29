@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { calcEdad } from "@/lib/fechas";
 import Link from "next/link";
 
 export default async function Dashboard({
@@ -11,7 +12,7 @@ export default async function Dashboard({
 
   let query = supabase
     .from("pacientes")
-    .select("id, nombre, edad, telefono, email")
+    .select("id, nombre, fecha_nacimiento, telefono, email")
     .order("creado_en", { ascending: false });
 
   if (q && q.trim()) {
@@ -63,7 +64,7 @@ export default async function Dashboard({
               >
                 <div className="font-medium">{p.nombre}</div>
                 <div className="text-sm text-slate-500">
-                  {p.edad ? `${p.edad} años · ` : ""}
+                  {p.fecha_nacimiento ? `${calcEdad(p.fecha_nacimiento)} · ` : ""}
                   {p.telefono || p.email || "sin contacto"}
                 </div>
               </Link>

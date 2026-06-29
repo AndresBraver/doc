@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   if (!ok) return NextResponse.json({ error: "no autorizado" }, { status: 401 });
 
   const supabase = createAdminClient();
-  const diasVacuna = Number(process.env.DIAS_AVISO_VACUNA || 7);
+  const diasVacuna = Number(process.env.DIAS_AVISO_VACUNA || 14);
   const diasCita = Number(process.env.DIAS_AVISO_CITA || 1);
   const resultados: any[] = [];
 
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const pac: any = v.paciente;
     if (!pac) continue;
     const fecha = new Date(v.proxima_dosis).toLocaleDateString("es-MX");
-    const msg = `Hola ${pac.nombre}, te recordamos tu próxima dosis de la vacuna ${v.nombre} el ${fecha}. — Tu clínica`;
+    const msg = `Hola ${pac.nombre}: se acerca la próxima dosis de ${v.nombre} (aprox. ${fecha}). Por favor agenda tu cita comunicándote con el consultorio. — Tu clínica`;
 
     if (pac.email) await enviarEmail(pac.email, "Recordatorio de vacuna", `<p>${msg}</p>`);
     if (pac.telefono) await enviarSMS(pac.telefono, msg);

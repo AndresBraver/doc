@@ -1,17 +1,18 @@
-// Cartilla Nacional de Vacunación (México) + Influenza.
-// Esquema de referencia segun el Esquema de Vacunacion Universal.
-// IMPORTANTE: es una guia; el doctor siempre verifica contra la cartilla oficial vigente.
+// Cartilla Nacional de Vacunación (México) — basada en el Esquema de Vacunación.
+// edadMeses = edad recomendada en meses (para calcular la fecha desde el nacimiento).
+// IMPORTANTE: es una guia de referencia; el doctor verifica contra la cartilla oficial vigente.
 
 export type Dosis = {
-  etiqueta: string; // "1a dosis", "Refuerzo", etc.
-  edad: string; // a que edad toca (texto para mostrar)
-  intervaloMeses: number | null; // meses hasta la siguiente dosis; null = es la ultima
+  etiqueta: string;
+  edad: string;              // texto a mostrar
+  edadMeses: number | null;  // edad en meses para calcular la fecha; null = adicional/campaña
+  anual?: boolean;           // true = se revacuna cada año
 };
 
 export type VacunaCartilla = {
   id: string;
   nombre: string;
-  protege: string; // contra que protege
+  protege: string;
   dosis: Dosis[];
 };
 
@@ -20,88 +21,83 @@ export const CARTILLA: VacunaCartilla[] = [
     id: "bcg",
     nombre: "BCG",
     protege: "Tuberculosis",
-    dosis: [{ etiqueta: "Dosis unica", edad: "Al nacer", intervaloMeses: null }],
+    dosis: [{ etiqueta: "Única", edad: "Al nacer", edadMeses: 0 }],
   },
   {
     id: "hepb",
     nombre: "Hepatitis B",
     protege: "Hepatitis B",
     dosis: [
-      { etiqueta: "1a dosis", edad: "Al nacer", intervaloMeses: 2 },
-      { etiqueta: "2a dosis", edad: "2 meses", intervaloMeses: 4 },
-      { etiqueta: "3a dosis", edad: "6 meses", intervaloMeses: null },
+      { etiqueta: "Primera", edad: "Al nacer", edadMeses: 0 },
+      { etiqueta: "Segunda", edad: "2 meses", edadMeses: 2 },
+      { etiqueta: "Tercera", edad: "6 meses", edadMeses: 6 },
     ],
   },
   {
     id: "pentavalente",
-    nombre: "Pentavalente acelular",
-    protege: "Difteria, tosferina, tetanos, polio (VIP) y Hib",
+    nombre: "Pentavalente acelular (DPaT+VPI+Hib)",
+    protege: "Difteria, tosferina, tétanos, poliomielitis e infecciones por H. influenzae b",
     dosis: [
-      { etiqueta: "1a dosis", edad: "2 meses", intervaloMeses: 2 },
-      { etiqueta: "2a dosis", edad: "4 meses", intervaloMeses: 2 },
-      { etiqueta: "3a dosis", edad: "6 meses", intervaloMeses: 12 },
-      { etiqueta: "4a dosis (refuerzo)", edad: "18 meses", intervaloMeses: null },
+      { etiqueta: "Primera", edad: "2 meses", edadMeses: 2 },
+      { etiqueta: "Segunda", edad: "4 meses", edadMeses: 4 },
+      { etiqueta: "Tercera", edad: "6 meses", edadMeses: 6 },
+      { etiqueta: "Cuarta", edad: "18 meses", edadMeses: 18 },
     ],
+  },
+  {
+    id: "dpt",
+    nombre: "DPT",
+    protege: "Difteria, tosferina y tétanos",
+    dosis: [{ etiqueta: "Refuerzo", edad: "4 años", edadMeses: 48 }],
   },
   {
     id: "rotavirus",
     nombre: "Rotavirus",
     protege: "Diarrea por rotavirus",
     dosis: [
-      { etiqueta: "1a dosis", edad: "2 meses", intervaloMeses: 2 },
-      { etiqueta: "2a dosis", edad: "4 meses", intervaloMeses: null },
+      { etiqueta: "Primera", edad: "2 meses", edadMeses: 2 },
+      { etiqueta: "Segunda", edad: "4 meses", edadMeses: 4 },
     ],
   },
   {
     id: "neumococo",
-    nombre: "Neumococica conjugada",
-    protege: "Neumonia y meningitis por neumococo",
+    nombre: "Neumocócica conjugada",
+    protege: "Infecciones por neumococo",
     dosis: [
-      { etiqueta: "1a dosis", edad: "2 meses", intervaloMeses: 2 },
-      { etiqueta: "2a dosis", edad: "4 meses", intervaloMeses: 8 },
-      { etiqueta: "Refuerzo", edad: "12 meses", intervaloMeses: null },
+      { etiqueta: "Primera", edad: "2 meses", edadMeses: 2 },
+      { etiqueta: "Segunda", edad: "4 meses", edadMeses: 4 },
+      { etiqueta: "Refuerzo (otras)", edad: "12 meses", edadMeses: 12 },
     ],
   },
   {
     id: "influenza",
-    nombre: "Influenza (estacional)",
+    nombre: "Influenza",
     protege: "Influenza / gripe",
     dosis: [
-      { etiqueta: "1a dosis", edad: "6 meses", intervaloMeses: 1 },
-      { etiqueta: "2a dosis", edad: "4 semanas despues", intervaloMeses: 12 },
-      { etiqueta: "Refuerzo anual", edad: "Cada ano (temporada invernal)", intervaloMeses: 12 },
+      { etiqueta: "Primera", edad: "6 meses", edadMeses: 6 },
+      { etiqueta: "Segunda", edad: "7 meses", edadMeses: 7 },
+      { etiqueta: "Revacunación", edad: "Anual (hasta los 35 meses)", edadMeses: null, anual: true },
     ],
   },
   {
     id: "srp",
-    nombre: "Triple viral (SRP)",
-    protege: "Sarampion, rubeola y parotiditis",
+    nombre: "SRP (Triple viral)",
+    protege: "Sarampión, rubéola y parotiditis",
     dosis: [
-      { etiqueta: "1a dosis", edad: "12 meses", intervaloMeses: 60 },
-      { etiqueta: "2a dosis", edad: "6 anos", intervaloMeses: null },
+      { etiqueta: "Primera", edad: "1 año", edadMeses: 12 },
+      { etiqueta: "Refuerzo", edad: "6 años", edadMeses: 72 },
     ],
   },
   {
-    id: "dpt",
-    nombre: "DPT (refuerzo)",
-    protege: "Difteria, tosferina y tetanos",
-    dosis: [{ etiqueta: "Refuerzo", edad: "4 anos", intervaloMeses: null }],
+    id: "sabin",
+    nombre: "Sabin (VOP)",
+    protege: "Poliomielitis",
+    dosis: [{ etiqueta: "Adicionales", edad: "En campañas", edadMeses: null }],
   },
   {
-    id: "vph",
-    nombre: "VPH",
-    protege: "Virus del papiloma humano",
-    dosis: [
-      { etiqueta: "1a dosis", edad: "11 anos / 5o de primaria", intervaloMeses: 6 },
-      { etiqueta: "2a dosis", edad: "6 meses despues", intervaloMeses: null },
-    ],
-  },
-  {
-    id: "td",
-    nombre: "Td (Tetanos-Difteria)",
-    protege: "Tetanos y difteria (adolescentes y adultos)",
-    dosis: [
-      { etiqueta: "Refuerzo", edad: "Cada 10 anos", intervaloMeses: 120 },
-    ],
+    id: "sr",
+    nombre: "SR",
+    protege: "Sarampión y rubéola",
+    dosis: [{ etiqueta: "Adicionales", edad: "En campañas", edadMeses: null }],
   },
 ];

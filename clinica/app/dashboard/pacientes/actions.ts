@@ -25,11 +25,16 @@ export async function crearPaciente(formData: FormData) {
   const edad = edadManual ? Number(edadManual) : edadDesde(fecha_nacimiento);
   const pesoVal = formData.get("peso");
 
+  const tallaVal = formData.get("talla");
+  const sexo = (String(formData.get("sexo")) || "") || null;
+
   const { error } = await supabase.from("pacientes").insert({
     nombre: String(formData.get("nombre")),
     fecha_nacimiento,
     edad,
+    sexo,
     peso: pesoVal ? Number(pesoVal) : null,
+    talla: tallaVal ? Number(tallaVal) : null,
     email: (String(formData.get("email")) || "") || null,
     telefono: (String(formData.get("telefono")) || "") || null,
     notas: (String(formData.get("notas")) || "") || null,
@@ -67,21 +72,14 @@ export async function agregarCita(formData: FormData) {
 export async function aplicarCartilla(formData: FormData) {
   const supabase = await createClient();
   const paciente_id = String(formData.get("paciente_id"));
-  const nombre = String(formData.get("nombre")); // "Pentavalente acelular — 1a dosis"
-  const intervalo = formData.get("intervalo_meses");
-
-  const hoy = new Date();
-  let proxima: string | null = null;
-  if (intervalo && Number(intervalo) > 0) {
-    const d = new Date(hoy);
-    d.setMonth(d.getMonth() + Number(intervalo));
-    proxima = d.toISOString().slice(0, 10); // YYYY-MM-DD
-  }
+  const nombre = String(formData.get("nombre"));
+  const proximaRaw = String(formData.get("proxima_dosis") || "");
+  const proxima = proximaRaw.trim() ? proximaRaw.trim() : null;
 
   const { error } = await supabase.from("vacunas").insert({
     paciente_id,
     nombre,
-    fecha_aplicada: hoy.toISOString().slice(0, 10),
+    fecha_aplicada: new Date().toISOString().slice(0, 10),
     proxima_dosis: proxima,
     recordatorio_enviado: false,
   });
@@ -95,6 +93,23 @@ export async function borrarVacuna(formData: FormData) {
   const paciente_id = String(formData.get("paciente_id"));
   await supabase.from("vacunas").delete().eq("id", id);
   revalidatePath(`/dashboard/pacientes/${paciente_id}`);
+}
+
+export async function actualizarMedidas(formData: FormData) {
+  const supabase = await createClient();
+  const id = String(formData.get("paciente_id"));
+  const peso = formData.get("peso");
+  const talla = formData.get("talla");
+  const sexo = (String(formData.get("sexo")) || "") || null;
+  await supabase
+    .from("pacientes")
+    .update({
+      peso: peso ? Number(peso) : null,
+      talla: talla ? Number(talla) : null,
+      sexo,
+    })
+    .eq("id", id);
+  revalidatePath(`/dashboard/pacientes/${id}`);
 }
 
 export async function borrarPaciente(formData: FormData) {
