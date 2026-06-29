@@ -66,6 +66,29 @@ export function percentilOMS(
 }
 
 // Edad en meses (con decimales) a partir de la fecha de nacimiento
+// Z de percentiles clave
+export const Z_PERCENTILES = { p3: -1.88079, p15: -1.03643, p50: 0, p85: 1.03643, p97: 1.88079 };
+
+// Valor de la medida para un z dado (inverso de LMS): para dibujar las curvas.
+export function valorEnZ(
+  medida: "weight" | "height",
+  sexo: "male" | "female",
+  edadMeses: number,
+  z: number
+): number | null {
+  const lms = interp(OMS[medida]?.[sexo] ?? [], edadMeses);
+  if (!lms) return null;
+  const { L, M, S } = lms;
+  const v = L !== 0 ? M * Math.pow(1 + L * S * z, 1 / L) : M * Math.exp(S * z);
+  return isFinite(v) ? v : null;
+}
+
+// Rango de edad disponible para una medida (en meses)
+export function rangoMeses(medida: "weight" | "height"): { min: number; max: number } {
+  const t = OMS[medida]?.male ?? [];
+  return { min: t[0]?.m ?? 0, max: t[t.length - 1]?.m ?? 60 };
+}
+
 export function edadEnMeses(fechaNacimiento: string | null): number | null {
   if (!fechaNacimiento) return null;
   const n = new Date(fechaNacimiento + "T00:00:00");

@@ -34,7 +34,7 @@ export default async function NuevoPaciente({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Campo label="Peso (kg)" name="peso" type="number" step="0.1" />
-          <Campo label="Talla (cm)" name="talla" type="number" step="0.1" />
+          <Campo label="Estatura / altura (cm)" name="talla" type="number" step="0.1" />
         </div>
         <Campo label="Correo" name="email" type="email" />
         <Campo label="Teléfono (con lada, ej. +52...)" name="telefono" type="tel" />

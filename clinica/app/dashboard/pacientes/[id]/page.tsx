@@ -5,6 +5,7 @@ import {
 import { CARTILLA } from "@/lib/cartilla";
 import { calcEdad, fechaEsperada, sumarMeses } from "@/lib/fechas";
 import { percentilOMS, edadEnMeses } from "@/lib/percentiles";
+import GraficaCrecimiento from "./GraficaCrecimiento";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -69,14 +70,26 @@ export default async function DetallePaciente({
 
       {/* CRECIMIENTO + PERCENTILES OMS */}
       <section className="bg-white rounded-2xl p-5">
-        <h2 className="font-semibold mb-1">Crecimiento (percentil OMS)</h2>
+        <h2 className="font-semibold mb-1">Crecimiento</h2>
         <p className="text-xs text-slate-400 mb-4">
-          Se recalcula con cada medición. Requiere sexo y fecha de nacimiento.
+          El punto azul es tu paciente; la línea verde es el promedio (OMS, el que usa México). Se
+          recalcula con cada medición.
         </p>
+
+        <div className="space-y-5 mb-4">
+          <GraficaCrecimiento
+            medida="weight" sexo={sexo} edadMeses={mesesExactos}
+            valor={p.peso} titulo="Peso para la edad" unidad="kg"
+          />
+          <GraficaCrecimiento
+            medida="height" sexo={sexo} edadMeses={mesesExactos}
+            valor={p.talla} titulo="Estatura para la edad" unidad="cm"
+          />
+        </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Medida titulo="Peso" valor={p.peso ? `${p.peso} kg` : "—"} res={pPeso} />
-          <Medida titulo="Talla" valor={p.talla ? `${p.talla} cm` : "—"} res={pTalla} />
+          <Medida titulo="Estatura/altura" valor={p.talla ? `${p.talla} cm` : "—"} res={pTalla} />
         </div>
 
         <details>
@@ -89,7 +102,7 @@ export default async function DetallePaciente({
                 className="w-full rounded-lg border border-slate-300 px-2 py-2" />
             </div>
             <div>
-              <label className="text-xs text-slate-500">Talla (cm)</label>
+              <label className="text-xs text-slate-500">Estatura/altura (cm)</label>
               <input name="talla" type="number" step="0.1" defaultValue={p.talla ?? ""}
                 className="w-full rounded-lg border border-slate-300 px-2 py-2" />
             </div>
